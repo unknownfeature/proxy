@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from proxy2 import *
+from proxy import *
 from collections import deque
 
 class SSLStripRequestHandler(ProxyRequestHandler):
