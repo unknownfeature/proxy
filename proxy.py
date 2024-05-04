@@ -180,7 +180,8 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
         res_body_plain = self.decode_content_body(res_body, content_encoding)
 
         res_body_modified = self.response_handler(req, req_body, res, res_body_plain)
-
+        print('modified')
+        print(req_body_modified)
         if res_body_modified is False:
             self.send_error(403)
             return
