@@ -136,7 +136,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
             return
         elif req_body_modified is not None:
             req_body = req_body_modified
-            req.headers['Content-length'] = str(len(req_body))
+            req.headers['Content-length'] = str(content_length)
 
         u = urlparse.urlsplit(req.path)
         scheme, netloc, path = u.scheme, u.netloc, (u.path + '?' + u.query if u.query else u.path)
