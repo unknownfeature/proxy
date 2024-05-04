@@ -27,7 +27,7 @@ def join_with_script_dir(path):
 
 
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
-    address_family = socket.AF_INET6
+    address_family = socket.AF_INET
     daemon_threads = True
 
     def handle_error(self, request, client_address):
@@ -77,7 +77,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
                 p2 = Popen(["openssl", "x509", "-req", "-days", "3650", "-CA", self.cacert, "-CAkey", self.cakey, "-set_serial", epoch, "-out", certpath], stdin=p1.stdout, stderr=PIPE)
                 p2.communicate()
 
-        self.wfile.write("%s %d %s\r\n" % (self.protocol_version, 200, 'Connection Established'))
+        self.wfile.write(b"%s %d %s\r\n" % (self.protocol_version, 200, 'Connection Established'))
         self.end_headers()
 
         self.connection = ssl.wrap_socket(self.connection, keyfile=self.certkey, certfile=certpath, server_side=True)
@@ -86,15 +86,15 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
 
         conntype = self.headers.get('Proxy-Connection', '')
         if self.protocol_version == "HTTP/1.1" and conntype.lower() != 'close':
-            self.close_connection = 0
+            self.close_connection = False
         else:
-            self.close_connection = 1
+            self.close_connection = False
 
     def connect_relay(self):
         address = self.path.split(':', 1)
         address[1] = int(address[1]) or 443
         try:
-            s = socket.create_connection(address, timeout=self.timeout)
+            s = socket.create_connection(tuple(*address), timeout=self.timeout)
         except Exception as e:
             self.send_error(502)
             return
@@ -102,7 +102,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
         conns = [self.connection, s]
-        self.close_connection = 0
+        self.close_connection = False
         while not self.close_connection:
             rlist, wlist, xlist = select.select(conns, [], conns, self.timeout)
             if xlist or not rlist:
@@ -201,7 +201,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
             self.save_handler(req, req_body, res, res_body_plain)
 
     def relay_streaming(self, res):
-        self.wfile.write("%s %d %s\r\n" % (self.protocol_version, res.status, res.reason))
+        self.wfile.write(b"%s %d %s\r\n" % (self.protocol_version, res.status, res.reason))
         for line in res.headers.headers:
             self.wfile.write(line)
         self.end_headers()
@@ -372,7 +372,7 @@ def test(HandlerClass=ProxyRequestHandler, ServerClass=ThreadingHTTPServer, prot
         port = int(sys.argv[1])
     else:
         port = 8080
-    server_address = ('::1', port)
+    server_address = ('0.0.0.0', port)
 
     HandlerClass.protocol_version = protocol
     httpd = ServerClass(server_address, HandlerClass)
