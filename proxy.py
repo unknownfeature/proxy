@@ -180,15 +180,17 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
         res_body_plain = self.decode_content_body(res_body, content_encoding)
         print('plain')
         print(res_body_plain)
-        res_body_modified = res_body_plain #self.response_handler(req, req_body, res, res_body_plain)
+        res_body_modified = self.response_handler(req, req_body, res, res_body_plain)
         print('modified')
-        print(req_body_modified)
+        print(res_body_modified)
         if res_body_modified is False:
             self.send_error(403)
             return
         elif res_body_modified is not None:
             res_body_plain = res_body_modified
             res_body = self.encode_content_body(res_body_plain, content_encoding)
+            print('encoded')
+            print(res_body)
             res.headers['Content-Length'] = str(len(res_body))
 
         setattr(res, 'headers', self.filter_headers(res.headers))
