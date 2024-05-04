@@ -190,7 +190,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
 
         setattr(res, 'headers', self.filter_headers(res.headers))
 
-        self.wfile.write("%s %d %s\r\n" % (self.protocol_version, res.status, res.reason))
+        self.wfile.write(bytes("%s %d %s\r\n" % (self.protocol_version, res.status, res.reason), 'utf-8'))
         for line in res.headers.headers:
             self.wfile.write(line)
         self.end_headers()
